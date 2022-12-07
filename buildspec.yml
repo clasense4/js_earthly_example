@@ -1,0 +1,36 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - wget https://github.com/earthly/earthly/releases/download/v0.6.30/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly
+      - git clone https://github.com/clasense4/js_earthly_example.git
+  pre_build:
+    commands:
+       - ls -ahl
+       - node --version
+       - npm --version
+       - yarn --version
+       - curl --version
+       - earthly --version
+       # Added this line to test the internet connection to yarnpkg.com
+       - wget https://registry.yarnpkg.com/redis-info/-/redis-info-3.1.0.tgz
+       - ls -ahl
+       - echo Logging into Docker
+       # Make sure to add the DOCKERHUB_USERNAME and DOCKERHUB_TOKEN environment variables in the AWS CodeBuild project
+       - docker login --username "${DOCKERHUB_USERNAME}" --password "${DOCKERHUB_TOKEN}"
+
+  build:
+    commands:
+      - ls -ahl
+      - pwd
+
+      # Build the artifact using docker
+      - cd js_earthly_example
+      - ls -ahl
+      - docker build -t js_earthly .
+      - docker images | grep js
+
+      # Build the artifact using earthly
+      - earthly --version
+      - earthly +build
+      - ls -ahl

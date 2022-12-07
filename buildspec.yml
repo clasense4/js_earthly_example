@@ -1,9 +1,22 @@
 version: 0.2
+env:
+  variables:
+    DOCKER_BUILDKIT: 1
+    DOCKER_CLI_EXPERIMENTAL: enabled
+    COMPOSE_DOCKER_CLI_BUILD: 1
 phases:
   install:
     commands:
       - wget https://github.com/earthly/earthly/releases/download/v0.6.30/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly
       - git clone https://github.com/clasense4/js_earthly_example.git
+      # - /usr/sbin/service docker start
+      # Configure earthly
+      - earthly config global.cache_size_mb 30000
+      - earthly config global.cache_size_pct 40
+      - earthly config global.disable_analytics true
+      - earthly config global.disable_log_sharing true
+      - cat ~/.earthly/config.yml
+      - earthly bootstrap
   pre_build:
     commands:
        - ls -ahl
@@ -31,6 +44,5 @@ phases:
       - docker images | grep js
 
       # Build the artifact using earthly
-      - earthly --version
-      - earthly +build
+      - earthly -P -V --strict +build
       - ls -ahl
